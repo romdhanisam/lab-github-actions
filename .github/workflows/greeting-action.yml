@@ -1,0 +1,22 @@
+name: Greeting
+
+on:
+    push:
+      branches:
+        - dev
+      paths:
+        - ".github/workflows/greeting-action.yml"
+
+jobs:
+  greeting-example:
+    name: "Test: greeting action"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: greeting_test
+        uses: ./
+        with:
+          name: "Samir"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

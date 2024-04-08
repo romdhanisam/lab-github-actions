@@ -1,0 +1,47 @@
+name: 'Basic Git Action'
+description: "This is a simple git action"
+author: Samir Romdhani
+branding:
+  icon: "activity"
+  color: "blue"
+
+inputs:
+  name:
+    description: "Name to greet"
+    required: true
+
+# runs:
+#   using: 'composite'
+#   steps:
+#   - name: Great
+#     run: echo Hi, "${{ inputs.name }}"
+#     shell: bash
+#   - name: git --version
+#     run: eval $(git --version)
+#     shell: bash
+#   - name: git set email
+#     run: git config --global user.email "${GITHUB_ACTOR_ID}+${GITHUB_ACTOR}@users.noreply.github.com"
+#     shell: bash
+#   - name: git set name
+#     run: git config --global user.name "${GITHUB_ACTOR}"
+#     shell: bash
+#   - name: git config show
+#     run: git config -l
+#     shell: bash
+#   - name: git commit
+#     run: |
+#      touch test.txt | tee 'test' > test.txt 
+#      git add .
+#      git commit -m "$(curl -s https://whatthecommit.com/index.txt)"
+#     shell: bash
+#   - name: git log
+#     run: git log
+#     shell: bash
+#   - name: var RUNNER_NAME
+#     run: echo $RUNNER_NAME 
+#     shell: bash
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - ${{ inputs.name }}
