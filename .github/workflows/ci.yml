@@ -1,0 +1,126 @@
+name: CI⚡CD Workflow
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  app_build:
+    name: 📦app:build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Cache node modules, dist folder
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-node-
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: 📦 Build Application
+        run: npm run build
+
+  app_checks:
+    name: 🤞app:checks
+    needs: app_build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-node-
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: 🤞Run Unit Tests
+        run: npm run test:ci
+
+      - name: 🤞Run Integration Tests
+        run: |
+          echo "Run Integration Tests"
+          ls
+
+  app_quality:
+    name: 🎯app:quality
+    needs: app_checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache node modules
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-node-
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: 🎯Run quality reporter
+        run: echo "Making actions to evaluate code quality"
+
+  docker_image:
+    name: 🐳docker:image
+    needs: app_quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - shell: bash
+        name: Before dependant is Running
+        run: chmod +x -R ./scripts/build-environments.sh && ./scripts/build-environments.sh
+
+      - uses: romdhanisam/lab-github-actions@v2-docker-publish.next.2
+        name: 🐳 docker Build and Push latest
+        with:
+          registry_username: ${{secrets.CI_REGISTRY_USER}}
+          registry_password: ${{secrets.DOCKER_REGISTRY_PASSWORD}}
+          docker_image_name: demo_app
+          github_run_number: ${{github.run_number}}
+
+  k8s_deploy:
+    name: 🚀☸ k8s:deploy
+    needs: docker_image
+    runs-on: ubuntu-latest
+    env:
+      EKS_CLUSTER_NAME: cncf-tunisia-demo-cluster
+      AWS_PROFILE: test01
+      AWS_REGION: eu-west-3
+      K8S_NAMESPACE: cncf-tn
+
+    services:
+      my_service:
+        image: romdhanisamir/ci-tools:0.0.2-dev.1-node18
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        run: |
+          aws configure set AWS_ACCESS_KEY_ID ${{ secrets.AWS_ACCESS_KEY_ID }} --profile $AWS_PROFILE
+          aws configure set AWS_SECRET_ACCESS_KEY ${{ secrets.AWS_SECRET_ACCESS_KEY }} --profile $AWS_PROFILE
+          aws configure set AWS_DEFAULT_REGION ${{ env.AWS_REGION }} --profile $AWS_PROFILE
+
+      - name: Update kube config
+        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }}  --region ${{ env.AWS_REGION }} --profile ${{ env.AWS_PROFILE }}
+
+      - name: deploy
+        run: kubectl -n ${{ env.K8S_NAMESPACE }} set image deployment/app-deploy app=romdhanisamir/demo_app:github-action-ci-${{ github.run_number }}
+
+      - name: get all, ingress in namespace
+        run: kubectl -n ${{ env.K8S_NAMESPACE }} get all,ingress
