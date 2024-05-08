@@ -1,4 +1,6 @@
+.DS_Store/
+.github/
+.idea/*
+.vscode/*
 .angular/
-.idea/
-.vscode/
 node_modules/

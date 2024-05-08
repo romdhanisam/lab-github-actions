@@ -8,35 +8,43 @@ inputs:
   registry_password:
     description: "Password for image registry"
     required: true
+  working_directory:
+    description: "Git context of Dockerfile"
+    required: true
+  docker_image_name:
+    description: "Docker image name"
+    required: true
+  github_run_number:
+    description: "github run number"
+    required: false
+
+outputs:
+  docker_image:
+    description: "Docker image name with tag"
+    value: ${{ steps.docker_image_with_tag.outputs.docker_image }}
 
 runs:
   using: "composite"
   steps:
-    - name: Dependant is Running
-      shell: bash
-      run: echo hello from composite
-#    - uses: docker/setup-buildx-action@v1
-#    - uses: docker/login-action@v1
-#      with:
-#        username: ${{inputs.registry_username}}
-#        password: ${{inputs.registry_password}}
-#
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
     - name: 🐳 Login to DockerHub
       uses: docker/login-action@v3
       with:
-       # registry: ghcr.io
-        username: ${{ secrets.registry_username }}
-        password: ${{ secrets.registry_password }}
-#
-    - name: 🐳 Build and push
+        username: ${{ inputs.registry_username }}
+        password: ${{ inputs.registry_password }}
+
+    - name: 🐳 Build and Push latest
       uses: docker/build-push-action@v5
       env:
-        CI_REGISTRY_USER: "romdhanisamir"
-        DOCKER_IMAGE_NAME: demo_app
-        DOCKER_IMAGE_TAG: github-action-ci_${{ GITHUB_RUN_NUMBER }}
+        DOCKER_IMAGE_TAG: github-action-ci-${{ inputs.github_run_number }}
       with:
-        context: .
-        push: false
-        tags: $CI_REGISTRY_USER/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}:latest, $CI_REGISTRY_USER/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
-      run: |
-        chmod +x -R ./scripts/build-environments.sh && ./scripts/build-environments.sh
+        context: ${{inputs.working_directory}}
+        file: ${{inputs.working_directory}}/Dockerfile
+        push: true
+        tags: ${{ inputs.registry_username }}/${{ inputs.docker_image_name }}:${{ env.DOCKER_IMAGE_TAG }}, ${{ inputs.registry_username }}/${{ inputs.docker_image_name }}:latest
+
+    - name: docker image with tag
+      id: docker_image_with_tag
+      run: echo "docker_image=${{ inputs.docker_image_name }}:github-action-ci-${{ inputs.github_run_number }}" >> $GITHUB_OUTPUT
+      shell: bash
