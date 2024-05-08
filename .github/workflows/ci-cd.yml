@@ -1,0 +1,73 @@
+name: CI⚡CD Workflow - Release Project
+
+on:
+  push:
+    branches:
+      - main
+  release:
+    types: [ published ]
+      
+jobs:
+  ci:
+    name: CI 📦 🎯 # build, test and check quality => minimized Rote tasks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: 🏗 Build Application
+        run: npm run build
+
+      - name: 🧪 Run Unit Tests
+        run: npm run test:ci
+
+      - name: 🧪 Run Integration Tests
+        run: npm run ci:cy-run
+
+      - name: 🎯 Run quality reporter
+        run: echo "Making actions to evaluate code quality"
+
+  cd:
+    needs: ci
+    name: CD 🐳 🚀 # docker:image and k8s:deploy
+    runs-on: ubuntu-latest
+    env:
+      AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      EKS_CLUSTER_NAME: cncf-tunisia-demo-cluster
+      K8S_NAMESPACE: cncf-tn
+
+    steps:
+      - uses: actions/checkout@v4
+      - shell: bash
+        name: Before dependant is Running
+        run: chmod +x -R ./scripts/build-environments.sh && ./scripts/build-environments.sh
+
+      - name: 🐳 docker Build and Push latest
+        uses: romdhanisam/lab-github-actions@v2-docker-publish.next.2
+        with:
+          registry_username: ${{secrets.CI_REGISTRY_USER}}
+          registry_password: ${{secrets.DOCKER_REGISTRY_PASSWORD}}
+          docker_image_name: demo_app
+          github_run_number: ${{github.run_number}}
+
+      - name: Configure AWS credentials
+        run: |
+          aws configure set AWS_ACCESS_KEY_ID ${{ secrets.AWS_ACCESS_KEY_ID }} --profile ${{ env.AWS_PROFILE }}
+          aws configure set AWS_SECRET_ACCESS_KEY ${{ secrets.AWS_SECRET_ACCESS_KEY }} --profile ${{ env.AWS_PROFILE }}
+          aws configure set AWS_DEFAULT_REGION ${{ env.AWS_REGION }}
+
+      - name: Update kube config
+        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }}  --region ${{ secrets.AWS_REGION }} --profile ${{ secrets.AWS_PROFILE }}
+
+      - name: 🚀☸ deploy
+        run: kubectl -n ${{ env.K8S_NAMESPACE }} set image deployment/app-deploy app=romdhanisamir/demo_app:github-action-ci-${{ github.run_number }}
+
+      - name: get all, ingress in namespace
+        run: kubectl -n ${{ env.K8S_NAMESPACE }} get all,ingress
