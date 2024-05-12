@@ -1,6 +1,8 @@
 # lab-github-actions
 Github Actions 🕵️
 
+[![CI⚡CD Workflow - Release Project](https://github.com/romdhanisam/lab-github-actions/actions/workflows/ci-cd.yml/badge.svg?branch=main&event=push)](https://github.com/romdhanisam/lab-github-actions/actions/workflows/ci-cd.yml)[![CI⚡CD Workflow extended](https://github.com/romdhanisam/lab-github-actions/actions/workflows/ci-cd-extended.yml/badge.svg?branch=main)](https://github.com/romdhanisam/lab-github-actions/actions/workflows/ci-cd-extended.yml)
+
 <p align="center">
   <img src="https://avatars.githubusercontent.com/u/44036562?s=200&v=4" alt="dbt logo" width="200"/>
 </p>

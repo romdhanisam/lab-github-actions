@@ -77,14 +77,6 @@
                 }
               ],
               "outputHashing": "all"
-            },
-            "development": {
-              "buildOptimizer": false,
-              "optimization": false,
-              "vendorChunk": true,
-              "extractLicenses": false,
-              "sourceMap": true,
-              "namedChunks": true
             }
           },
           "defaultConfiguration": "production"
@@ -98,11 +90,11 @@
             "qa": {
               "browserTarget": "angular-app:build:qa"
             },
-            "development": {
-              "browserTarget": "angular-app:build:development"
+            "dev": {
+              "browserTarget": "angular-app:build:dev"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "dev"
         },
         "test": {
           "builder": "@angular-devkit/build-angular:jest",
@@ -164,7 +156,7 @@
           },
           "configurations": {
             "development": {
-              "devServerTarget": "angular-app:serve:development"
+              "devServerTarget": "angular-app:serve:dev"
             }
           }
         },

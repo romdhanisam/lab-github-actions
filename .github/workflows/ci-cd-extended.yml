@@ -3,7 +3,7 @@ name: CI⚡CD Workflow extended
 on:
   push:
     branches:
-      - test
+      - main
 
 defaults:
   run:
@@ -21,15 +21,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
-
-      - name: Cache dist folder
-        id: cache
-        uses: actions/cache@v4
-        with:
-          path: dist
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
 
       - name: Install Dependencies
         run: npm ci
@@ -44,22 +35,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Restore cache
-        id: restore-cache
-        uses: actions/cache@v4
-        with:
-          path: dist
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-node-
-
       - name: Install Dependencies
         run: npm ci
 
-      - name: 🧪 Run Unit Tests
+      - name: Run Unit Tests
         run: npm run test:ci
 
-      - name: 🧪 Run Integration Tests
-        run: npm run ci:cy-run
+      - name: Run Integration Tests
+        run: npm run build && npm run ci:cy-run
 
   app_quality:
     name: 🎯app:quality
@@ -75,43 +58,52 @@ jobs:
     name: 🐳docker:image
     needs: app_quality
     runs-on: ubuntu-latest
+    outputs:
+      my_published_docker_image: ${{ steps.docker_build.outputs.docker_image }}
     steps:
       - uses: actions/checkout@v4
-      - uses: romdhanisam/lab-github-actions@v1-docker-publish.next.4
-        name: 🐳 docker Build and Push latest
+
+      - shell: bash
+        name: Set ci runner characteristic Before dockerize
+        run: chmod +x -R ./scripts/build-environments.sh && ./scripts/build-environments.sh
+      - name: Get Short GitHub SHA
+        id: sha
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: 🐳 docker Build and Push latest
+        uses: romdhanisam/lab-github-actions@v1-docker-publish.next.1
+        id: docker_build
         with:
           registry_username: ${{secrets.CI_REGISTRY_USER}}
           registry_password: ${{secrets.DOCKER_REGISTRY_PASSWORD}}
           working_directory: angular-app
           docker_image_name: demo_app
-          github_run_number: ${{github.run_number}}
+          github_run_number: ${{github.run_number }}-${{ steps.sha.outputs.sha_short }}
 
   k8s_deploy:
     name: 🚀☸ k8s:deploy
     needs: docker_image
     runs-on: ubuntu-latest
     env:
+      AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
       EKS_CLUSTER_NAME: cncf-tunisia-demo-cluster
-      AWS_PROFILE: test01
-      AWS_REGION: eu-west-3
       K8S_NAMESPACE: cncf-tn
 
-    services:
-      my_service:
-        image: romdhanisamir/ci-tools:0.0.2-dev.1-node18
     steps:
       - uses: actions/checkout@v4
-      - name: Configure AWS credentials
+      - name: Configure AWS - update kube config
         run: |
-          aws configure set AWS_ACCESS_KEY_ID ${{ secrets.AWS_ACCESS_KEY_ID }} --profile $AWS_PROFILE
-          aws configure set AWS_SECRET_ACCESS_KEY ${{ secrets.AWS_SECRET_ACCESS_KEY }} --profile $AWS_PROFILE
-          aws configure set AWS_DEFAULT_REGION ${{ env.AWS_REGION }} --profile $AWS_PROFILE
-
-      - name: Update kube config
-        run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }}  --region ${{ env.AWS_REGION }} --profile ${{ env.AWS_PROFILE }}
-
-      - name: deploy
-        run: kubectl -n ${{ env.K8S_NAMESPACE }} set image deployment/app-deploy app=romdhanisamir/demo_app:github-action-ci-${{ github.run_number }}
-
+          aws configure set AWS_ACCESS_KEY_ID ${{ secrets.AWS_ACCESS_KEY_ID }} --profile ${{ env.AWS_PROFILE }}
+          aws configure set AWS_SECRET_ACCESS_KEY ${{ secrets.AWS_SECRET_ACCESS_KEY }} --profile ${{ env.AWS_PROFILE }}
+          aws configure set AWS_DEFAULT_REGION ${{ env.AWS_REGION }}
+          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} --profile ${{ secrets.AWS_PROFILE }}
+        
+      - name: 🚀☸ Deployment
+        run: |
+          sed -i.bak "s|DOCKER_IMAGE|${{needs.docker_image.outputs.my_published_docker_image}}|g" deploy/app.yaml
+          cat deploy/app.yaml
+          kubectl apply -n ${{ env.K8S_NAMESPACE }} -f deploy/app.yaml
+          
       - name: get all, ingress in namespace
         run: kubectl -n ${{ env.K8S_NAMESPACE }} get all,ingress
