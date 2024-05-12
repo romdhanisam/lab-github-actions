@@ -16,7 +16,7 @@ GitHub Actions is a ***continuous integration*** and ***continuous deployment***
 GitHub Actions supports workflows that interact with cloud services such as AWS, Azure, Google Cloud Platform, and Kubernetes 🚀
 
 <p align="center">
-  <img src="https://github.com/romdhanisam/lab-github-actions/blob/main/docs/imgs/summary.png?raw=true" alt="act graph" width="800"/>
+  <img src="https://github.com/romdhanisam/lab-github-actions/blob/main/angular-app/docs/imgs/summary.png?raw=true" alt="act graph" width="800"/>
 </p>
 
 ### Act
@@ -29,7 +29,7 @@ By using Act, you can streamline the development and testing of your GitHub Acti
 act --graph --workflows=.github/workflows/ci-cd.yml
 ```
 <p align="center">
-  <img src="https://github.com/romdhanisam/lab-github-actions/blob/main/docs/imgs/actcicd.png?raw=true" alt="act graph" width="180"/>
+  <img src="https://github.com/romdhanisam/lab-github-actions/blob/main/angular-app/docs/imgs/actcicd.png?raw=true" alt="act graph" width="180"/>
 </p>
 
 #### workflow jobs
@@ -37,7 +37,7 @@ act --graph --workflows=.github/workflows/ci-cd.yml
 act -l --workflows=.github/workflows/ci-cd.yml
 ```
 <p align="center">
-  <img src="https://github.com/romdhanisam/lab-github-actions/blob/main/docs/imgs/actcicd-list.png?raw=true" alt="act graph" width="1000"/>
+  <img src="https://github.com/romdhanisam/lab-github-actions/blob/main/angular-app/docs/imgs/actcicd-list.png?raw=true" alt="act graph" width="1000"/>
 </p>
 
 #### workflow graph
@@ -45,7 +45,7 @@ act -l --workflows=.github/workflows/ci-cd.yml
 act --graph --workflows=.github/workflows/ci-cd-extended.yml
 ```
 <p align="center">
-  <img src="https://github.com/romdhanisam/lab-github-actions/blob/main/docs/imgs/act-graph.png?raw=true" alt="act graph" width="180"/>
+  <img src="https://github.com/romdhanisam/lab-github-actions/blob/main/angular-app/docs/imgs/act-graph.png?raw=true" alt="act graph" width="180"/>
 </p>
 
 #### workflow jobs
@@ -53,19 +53,19 @@ act --graph --workflows=.github/workflows/ci-cd-extended.yml
 act -l --workflows=.github/workflows/ci-cd-extended.yml
 ```
 <p align="center">
-  <img src="https://github.com/romdhanisam/lab-github-actions/blob/main/docs/imgs/act-job-list.png?raw=true" alt="act graph" width="1000"/>
+  <img src="https://github.com/romdhanisam/lab-github-actions/blob/main/angular-app/docs/imgs/act-job-list.png?raw=true" alt="act graph" width="1000"/>
 </p>
 
 ## Examples
 ### Example of the job `build and push docker image`
 **[Composite action](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action)** provide a powerful mechanism for creating modular, reusable, and maintainable workflows in GitHub Actions, can be done by combining multiple steps or actions into a single action.
 <p align="center">
-  <img src="https://github.com/romdhanisam/lab-github-actions/blob/main/docs/imgs/docker-build-job.png?raw=true" alt="act graph" width="400"/>
+  <img src="https://github.com/romdhanisam/lab-github-actions/blob/main/angular-app/docs/imgs/docker-build-job.png?raw=true" alt="act graph" width="400"/>
 </p>
 
 --
 
 ### Website deployed using GitHub Actions 🎯
 <p align="center">
-  <img src="https://github.com/romdhanisam/lab-github-actions/blob/main/docs/imgs/demo.png?raw=true" alt="act graph" width="800"/>
+  <img src="https://github.com/romdhanisam/lab-github-actions/blob/main/angular-app/docs/imgs/demo.png?raw=true" alt="act graph" width="800"/>
 </p>

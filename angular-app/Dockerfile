@@ -7,6 +7,7 @@ RUN npm ci
 
 COPY . .
 ARG configuration=dev
+RUN cat ./src/environments/environment.ts
 RUN npm run build -- --output-path=./dist/out --configuration $configuration
 # run with nginx
 FROM nginx:1.17
