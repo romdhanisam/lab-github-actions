@@ -30,10 +30,10 @@ jobs:
       - name: 🏗 Build Application
         run: npm run build
 
-      - name: 🧪 Run Unit Tests
+      - name: Run Unit Tests
         run: npm run test:ci
 
-      - name: 🧪 Run Integration Tests
+      - name: Run Integration Tests
         run: npm run ci:cy-run
 
       - name: 🎯 Run quality reporter
@@ -58,7 +58,7 @@ jobs:
 
   cd:
     needs: ci
-    name: CD 🚀 (github act way)
+    name: CD 🚀 
     runs-on: ubuntu-latest
     env:
       AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
@@ -82,5 +82,5 @@ jobs:
           cat deploy/app.yaml
           kubectl apply -n ${{ env.K8S_NAMESPACE }} -f deploy/app.yaml
 
-      - name: get all in namespace (jsut for demo)
+      - name: get all in namespace (demo)
         run: kubectl -n ${{ env.K8S_NAMESPACE }} get all,ingress

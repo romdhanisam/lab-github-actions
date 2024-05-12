@@ -19,25 +19,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # - name: Setup Node
-      #   uses: actions/setup-node@v4
-      #   with:
-      #     node-version: 18
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
-      # - name: Install Dependencies
-      #   run: npm ci
+      - name: Install Dependencies
+        run: npm ci
 
-      # - name: 🏗 Build Application
-      #   run: npm run build
+      - name: 🏗 Build Application
+        run: npm run build
 
-      # - name: 🧪 Run Unit Tests
-      #   run: npm run test:ci
+      - name: Run Unit Tests
+        run: npm run test:ci
 
-      # - name: 🧪 Run Integration Tests
-      #   run: npm run ci:cy-run
+      - name: Run Integration Tests
+        run: npm run ci:cy-run
 
-      # - name: 🎯 Run quality reporter
-      #   run: echo "Making actions to evaluate code quality"
+      - name: 🎯 Run quality reporter
+        run: echo "Making actions to evaluate code quality"
 
       - name: Set ci runner characteristic Before dockerize
         shell: bash
@@ -57,7 +57,7 @@ jobs:
 
   cd:
     needs: ci
-    name: CD 🚀 (Argocd way)
+    name: CD 🚀 | Argocd
     runs-on: ubuntu-latest
     permissions:
       contents: write
