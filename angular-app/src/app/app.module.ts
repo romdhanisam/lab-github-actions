@@ -37,7 +37,7 @@ export const routes: Routes = [
         BrowserModule,
         HttpClientModule,
         BrowserAnimationsModule,
-        RouterModule.forRoot(routes, {useHash: true}),
+        RouterModule.forRoot(routes, {useHash: false}),
         StoreModule.forRoot({projects: projectReducer, theme: themeReducer}),
         StoreDevtoolsModule.instrument({maxAge: 25, logOnly: !isDevMode()}),
         // ServiceWorkerModule.register('ngsw-worker.js', {enabled: environment.production}),

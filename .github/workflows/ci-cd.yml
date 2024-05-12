@@ -3,14 +3,21 @@ name: CI⚡CD Workflow - Release Project
 on:
   push:
     branches:
-      - main
+      - develop
   release:
     types: [ published ]
-      
+
+defaults:
+  run:
+    working-directory: angular-app
+
 jobs:
   ci:
     name: CI 📦 🎯 
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: angular-app
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node
@@ -37,6 +44,9 @@ jobs:
     needs: ci
     name: CD 🐳 🚀 
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: angular-app
     env:
       AWS_PROFILE: ${{ secrets.AWS_PROFILE }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -45,18 +55,21 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - shell: bash
         name: Before dependant is Running
         run: chmod +x -R ./scripts/build-environments.sh && ./scripts/build-environments.sh
 
       - name: 🐳 docker Build and Push latest
-        uses: romdhanisam/lab-github-actions@v2-docker-publish.next.2
+        id: docker_build
+        uses: romdhanisam/lab-github-actions@v1-docker-publish.next.10
         with:
-          registry_username: ${{secrets.CI_REGISTRY_USER}}
-          registry_password: ${{secrets.DOCKER_REGISTRY_PASSWORD}}
+          registry_username: ${{ secrets.CI_REGISTRY_USER }}
+          registry_password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+          working_directory: angular-app
           docker_image_name: demo_app
-          github_run_number: ${{github.run_number}}
-
+          github_run_number: ${{ github.run_number }}
+          
       - name: Configure kube
         run: |
           aws configure set AWS_ACCESS_KEY_ID ${{ secrets.AWS_ACCESS_KEY_ID }} --profile ${{ env.AWS_PROFILE }}
@@ -66,10 +79,9 @@ jobs:
 
       - name: 🚀☸ Deployment
         run: |
-          sed -i.bak "s|DOCKER_IMAGE|romdhanisamir/demo_app:github-action-ci-${{ github.run_number }}|g" manifests/app.yaml
-          cat manifests/app.yaml
-          kubectl apply -n ${{ env.K8S_NAMESPACE }} -f manifests/app.yaml
+          sed -i.bak "s|DOCKER_IMAGE|${{ steps.docker_build.outputs.docker_image }}|g" deploy/app.yaml
+          cat deploy/app.yaml
+          kubectl apply -n ${{ env.K8S_NAMESPACE }} -f deploy/app.yaml
 
-      - name: get all, ingress in namespace
+      - name: get all in namespace (jsut for demo)
         run: kubectl -n ${{ env.K8S_NAMESPACE }} get all,ingress
-  

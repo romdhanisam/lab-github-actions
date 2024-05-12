@@ -4,7 +4,7 @@ metadata:
   name: app-github-deploy
   namespace: cncf-tn
 spec:
-  replicas: 4
+  replicas: 1
   selector:
     matchLabels:
       app: demo
@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: app
-        image: romdhanisamir/demo_app:github-action-ci-28
+        image: romdhanisamir/demo_app:github-action-ci-70
         ports:
         - containerPort: 80
         imagePullPolicy: Always

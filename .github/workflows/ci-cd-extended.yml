@@ -5,6 +5,10 @@ on:
     branches:
       - test
 
+defaults:
+  run:
+    working-directory: angular-app
+
 jobs:
   app_build:
     name: 📦app:build
@@ -73,14 +77,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - shell: bash
-        name: Before dependant is Running
-        run: chmod +x -R ./scripts/build-environments.sh && ./scripts/build-environments.sh
-      - uses: romdhanisam/lab-github-actions@v2-docker-publish.next.2
+      - uses: romdhanisam/lab-github-actions@v1-docker-publish.next.4
         name: 🐳 docker Build and Push latest
         with:
           registry_username: ${{secrets.CI_REGISTRY_USER}}
           registry_password: ${{secrets.DOCKER_REGISTRY_PASSWORD}}
+          working_directory: angular-app
           docker_image_name: demo_app
           github_run_number: ${{github.run_number}}
 
