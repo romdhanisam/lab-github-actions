@@ -14,8 +14,8 @@ inputs:
   docker_image_name:
     description: "Docker image name"
     required: true
-  github_run_number:
-    description: "github run number"
+  github_run_attempt:
+    description: "A unique number for each attempt of a particular workflow run in a repository"
     required: false
 
 outputs:
@@ -37,7 +37,7 @@ runs:
     - name: 🐳 Build and Push latest
       uses: docker/build-push-action@v5
       env:
-        DOCKER_IMAGE_TAG: github-action-ci-${{ inputs.github_run_number }}
+        DOCKER_IMAGE_TAG: github-action-ci-${{ inputs.github_run_attempt }}
       with:
         context: ${{inputs.working_directory}}
         file: ${{inputs.working_directory}}/Dockerfile
@@ -46,5 +46,5 @@ runs:
 
     - name: docker image with tag
       id: docker_image_with_tag
-      run: echo "docker_image=${{ inputs.docker_image_name }}:github-action-ci-${{ inputs.github_run_number }}" >> $GITHUB_OUTPUT
+      run: echo "docker_image=${{ inputs.docker_image_name }}:github-action-ci-${{ inputs.github_run_attempt }}" >> $GITHUB_OUTPUT
       shell: bash
