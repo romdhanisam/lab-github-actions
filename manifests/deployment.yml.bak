@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: app
-        image: romdhanisamir/demo_app:github-action-ci-25-ca56c03
+        image: romdhanisamir/demo_app:118
         ports:
         - containerPort: 80
         imagePullPolicy: Always
