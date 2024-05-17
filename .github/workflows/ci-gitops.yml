@@ -67,7 +67,7 @@ jobs:
         run: |
           git config --global user.name 'GitHub Actions User'
           git config --global user.email '18246134+romdhanisam@users.noreply.github.com'
-          sed -e "s|/demo_app:*.*.*-*.*$|/${{needs.ci.outputs.my_published_docker_image}}|g" manifests/deployment.yml
+          sed -i'.bak' -e "s|/demo_app:*.*.*-*.*$|/${{needs.ci.outputs.my_published_docker_image}}|g" manifests/deployment.yml
           git add .
           git commit -m "[update from CI] 📝 ${{needs.ci.outputs.my_published_docker_image}}"
           git push -u origin feat/argocd
